@@ -7,6 +7,7 @@ import io.github.alreadybetter.wordinflexer.core.WordInflector;
 import io.github.alreadybetter.wordinflexer.core.grammar.GrammaticalFeature;
 import io.github.alreadybetter.wordinflexer.core.grammar.GrammaticalFeatures;
 import io.github.alreadybetter.wordinflexer.kazakh.grammar.KazakhCase;
+import org.junit.Test;
 
 import static io.github.alreadybetter.wordinflexer.core.InflectionStatus.INSUFFICIENT_INFORMATION;
 import static io.github.alreadybetter.wordinflexer.core.InflectionStatus.SUCCESS;
@@ -31,10 +32,10 @@ import static io.github.alreadybetter.wordinflexer.kazakh.grammar.KazakhPossessi
 import static io.github.alreadybetter.wordinflexer.kazakh.grammar.KazakhPossessive.THIRD_PERSON;
 
 /**
- * Standalone regression checks runnable directly through main in an IDE.
- * No testing framework, consuming project or JVM assertion flag is required.
+ * Regression checks runnable through Maven, JUnit in an IDE, or the main method.
+ * JUnit is a test-scoped dependency; no consuming project or JVM assertion flag is required.
  * Failures throw AssertionError and make the process exit unsuccessfully.
- * Maven Surefire does not automatically execute this main-based runner.
+ * Maven Surefire executes the four annotated groups independently.
  */
 public final class KazakhWordInflectorSmokeTest {
 
@@ -53,10 +54,10 @@ public final class KazakhWordInflectorSmokeTest {
         checks.verifyCombinedTransformations();
         checks.verifyFailures();
         checks.verifyNoChange();
-        System.out.println("All " + checks.passed + " checks passed.");
     }
 
-    private void verifyCases() {
+    @Test
+    public void verifyCases() {
         verifyParadigm("кітап", "кітап", "кітаптың", "кітапқа", "кітапты", "кітапта", "кітаптан", "кітаппен");
         verifyParadigm("мектеп", "мектеп", "мектептің", "мектепке", "мектепті", "мектепте", "мектептен", "мектеппен");
         verifyParadigm("қала", "қала", "қаланың", "қалаға", "қаланы", "қалада", "қаладан", "қаламен");
@@ -65,7 +66,8 @@ public final class KazakhWordInflectorSmokeTest {
         verifyParadigm("қыз", "қыз", "қыздың", "қызға", "қызды", "қызда", "қыздан", "қызбен");
     }
 
-    private void verifyCombinedTransformations() {
+    @Test
+    public void verifyCombinedTransformations() {
         expectForm("жол", "жолдар", PLURAL);
         expectForm("жер", "жерлер", PLURAL);
         expectForm("кітап", "кітаптар", PLURAL);
@@ -88,7 +90,8 @@ public final class KazakhWordInflectorSmokeTest {
         expectForm("автор", "автормен", INSTRUMENTAL);
     }
 
-    private void verifyFailures() {
+    @Test
+    public void verifyFailures() {
         expectStatus("unknown source", new InflectionRequest("қалам", of(DATIVE)), INSUFFICIENT_INFORMATION);
         expectStatus("partial source", new InflectionRequest("қала", of(NOMINATIVE), of(DATIVE)), INSUFFICIENT_INFORMATION);
         expectStatus("existing possession", new InflectionRequest("қаласы", of(NOMINATIVE, SINGULAR, THIRD_PERSON), of(DATIVE)), UNSUPPORTED_WORD);
@@ -102,7 +105,8 @@ public final class KazakhWordInflectorSmokeTest {
         expectStatus("foreign case type", request("қала", foreignCase), UNSUPPORTED_FEATURES);
     }
 
-    private void verifyNoChange() {
+    @Test
+    public void verifyNoChange() {
         InflectionResult result = inflector.inflect(new InflectionRequest("Астана", of()));
         require(result.status() == SUCCESS, "Empty target should succeed without source declarations");
         require("Астана".equals(result.word().orElse(null)), "Empty target must preserve the original spelling");

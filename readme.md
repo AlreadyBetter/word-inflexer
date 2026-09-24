@@ -83,13 +83,25 @@ Examples below assume those three source declarations. These are documented expe
 - An empty target set requests no change. The processor still validates supported input and supplied features, but does not require missing source categories merely to return the original word.
 - The processor generates forms; it does not decide whether a word can meaningfully be pluralized in a particular context.
 
-## Standalone checks
+## Tests
 
-Open `word-inflexer-kazakh/src/test/java/io/github/alreadybetter/wordinflexer/kazakh/KazakhWordInflectorSmokeTest.java` in IntelliJ IDEA and run its `main` method using the gutter Run action. Reload the Maven project first if test sources are not recognized.
+Run from the repository root:
 
-No consuming project, test framework or `-ea` JVM flag is needed. The runner checks fixed case paradigms, combined transformations, feature order, unsupported inputs and result invariants. It prints each passing case and throws `AssertionError` at the first failure. A complete successful run prints `All 73 checks passed.`
+```shell
+mvn test
+```
 
-Add an `expectForm` call in `verifyCombinedTransformations` to check another word and its expected output. This main-based runner is manual: `mvn test` does not automatically run it.
+To select the Kazakh module and build its core dependency in the same reactor:
+
+```shell
+mvn -pl word-inflexer-kazakh -am test
+```
+
+Maven Surefire runs four JUnit test groups covering case paradigms, combined transformations, failure outcomes and unchanged input. JUnit 4.13.2 is a test-scoped dependency and is not required by applications using the library. Test reports are written to `word-inflexer-kazakh/target/surefire-reports`.
+
+In IntelliJ IDEA, reload Maven dependencies and run `KazakhWordInflectorSmokeTest` as a JUnit test. Its `main` method also remains available for manual execution. No separate consuming project or `-ea` JVM flag is needed.
+
+Add an `expectForm` call in `verifyCombinedTransformations` to check another word and its expected output. Checks throw `AssertionError` on a mismatch, causing the JUnit group and Maven build to fail.
 
 ## Build target
 
