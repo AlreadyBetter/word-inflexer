@@ -29,7 +29,7 @@ import static io.github.alreadybetter.wordinflexer.kazakh.grammar.KazakhPossessi
 import static io.github.alreadybetter.wordinflexer.kazakh.grammar.KazakhPossessive.THIRD_PERSON;
 
 public class Example {
-    public static void main(String[] args) {
+    static void main(String[] args) {
         WordInflector inflector = new KazakhWordInflector();
         GrammaticalFeatures source = of(NOMINATIVE, SINGULAR, NONE);
 
@@ -82,6 +82,14 @@ Examples below assume those three source declarations. These are documented expe
 - There is no dictionary, part-of-speech detection or general validation of lexical exceptions. Callers must supply regular nouns and accurate source declarations. Pronouns are outside the supported scope.
 - An empty target set requests no change. The processor still validates supported input and supplied features, but does not require missing source categories merely to return the original word.
 - The processor generates forms; it does not decide whether a word can meaningfully be pluralized in a particular context.
+
+## Standalone checks
+
+Open `word-inflexer-kazakh/src/test/java/io/github/alreadybetter/wordinflexer/kazakh/KazakhWordInflectorSmokeTest.java` in IntelliJ IDEA and run its `main` method using the gutter Run action. Reload the Maven project first if test sources are not recognized.
+
+No consuming project, test framework or `-ea` JVM flag is needed. The runner checks fixed case paradigms, combined transformations, feature order, unsupported inputs and result invariants. It prints each passing case and throws `AssertionError` at the first failure. A complete successful run prints `All 73 checks passed.`
+
+Add an `expectForm` call in `verifyCombinedTransformations` to check another word and its expected output. This main-based runner is manual: `mvn test` does not automatically run it.
 
 ## Build target
 
