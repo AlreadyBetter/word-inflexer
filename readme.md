@@ -1,16 +1,96 @@
 # Word Inflexer
 
-A Java library in early development for rule-based word inflection, starting with Kazakh and designed to support additional languages through separate modules.
+A Java 8-compatible library for rule-based word inflection. Language-independent contracts live in the core module; each language module owns its grammatical values, analysis and transformation order.
 
-The planned API lets callers specify the desired grammatical features, such as plural number, possession and case. Each language module will determine the order of transformations and report ambiguity when more information is needed.
+The initial Kazakh implementation generates regular noun forms by applying **number → possession → case**, regardless of the order of requested features.
 
 ## Modules
 
-- **word-inflexer-core** — language-independent feature contracts, grammatical number and an immutable feature set with conflict validation.
-- **word-inflexer-kazakh** — Kazakh case and possessive features; word analysis and inflection rules are planned.
+- **word-inflexer-core** — grammatical feature sets, immutable requests and results, and the `WordInflector` contract.
+- **word-inflexer-kazakh** — Kazakh grammatical values, conservative Cyrillic spelling analysis and regular noun generation.
 
-## Status
+## Usage
 
-The initial grammatical feature model is implemented. Word analysis and inflection are not implemented yet.
+The example uses the Kazakh module and its transitive core dependency. The language is selected by the implementation, not inferred from the input string.
 
-Targets Java 8 or later and uses Maven. When building with a newer JDK, the compiler release is set to 8 to preserve Java 8 API and bytecode compatibility.
+```java
+import io.github.alreadybetter.wordinflexer.core.InflectionRequest;
+import io.github.alreadybetter.wordinflexer.core.InflectionResult;
+import io.github.alreadybetter.wordinflexer.core.WordInflector;
+import io.github.alreadybetter.wordinflexer.core.grammar.GrammaticalFeatures;
+import io.github.alreadybetter.wordinflexer.kazakh.KazakhWordInflector;
+
+import static io.github.alreadybetter.wordinflexer.core.grammar.GrammaticalFeatures.of;
+import static io.github.alreadybetter.wordinflexer.core.grammar.GrammaticalNumber.PLURAL;
+import static io.github.alreadybetter.wordinflexer.core.grammar.GrammaticalNumber.SINGULAR;
+import static io.github.alreadybetter.wordinflexer.kazakh.grammar.KazakhCase.DATIVE;
+import static io.github.alreadybetter.wordinflexer.kazakh.grammar.KazakhCase.NOMINATIVE;
+import static io.github.alreadybetter.wordinflexer.kazakh.grammar.KazakhPossessive.NONE;
+import static io.github.alreadybetter.wordinflexer.kazakh.grammar.KazakhPossessive.THIRD_PERSON;
+
+public class Example {
+    public static void main(String[] args) {
+        WordInflector inflector = new KazakhWordInflector();
+        GrammaticalFeatures source = of(NOMINATIVE, SINGULAR, NONE);
+
+        InflectionResult result = inflector.inflect(
+                new InflectionRequest("астана", source, of(PLURAL, THIRD_PERSON, DATIVE))
+        );
+
+        System.out.println(result.status()); // SUCCESS
+        System.out.println(result.word().orElse("No confirmed form")); // астаналарына
+        result.message().ifPresent(System.out::println);
+    }
+}
+```
+
+Source features are declarations about the input, not additional transformations. The first implementation requires `NOMINATIVE`, `SINGULAR` and `NONE` for requests that change a word. Omitted source categories remain unknown and return `INSUFFICIENT_INFORMATION`; they are not silently filled in. Omitted target categories preserve the declared source values.
+
+Examples below assume those three source declarations. These are documented expected outputs, not an automated test report.
+
+| Input | Target features | Expected form |
+| --- | --- | --- |
+| кітап | DATIVE | кітапқа |
+| мектеп | DATIVE | мектепке |
+| қала | GENITIVE | қаланың |
+| қалам | ABLATIVE | қаламнан |
+| жол | PLURAL | жолдар |
+| жер | PLURAL | жерлер |
+| астана | PLURAL, DATIVE | астаналарға |
+| астана | PLURAL, THIRD_PERSON, DATIVE | астаналарына |
+| қала | FIRST_SINGULAR, DATIVE | қалама |
+| қала | FIRST_PLURAL, DATIVE | қаламызға |
+| кеме | THIRD_PERSON, LOCATIVE | кемесінде |
+| кітап | PLURAL, THIRD_PERSON, ACCUSATIVE | кітаптарын |
+
+`word()` is populated only for `SUCCESS`. Other outcomes include an explanatory `message()`. The shared result model can represent ambiguity, but this first processor requests explicit source declarations instead of guessing competing morphological analyses.
+
+## Current scope
+
+- All seven Kazakh cases, plural marking and possessive suffixes in their grammatical order.
+- Possessive suffixes on vowel-final singular stems and on newly generated plural stems.
+- Lowercase and initial-capital Kazakh Cyrillic nouns; original spelling is preserved and suffixes are lowercase.
+- Immutable request/result objects and a stateless, thread-safe Kazakh processor.
+- No external runtime dependencies.
+
+## Limitations
+
+- Already-inflected input cannot yet be analyzed and rebuilt. For example, supply `астана` with target possession instead of supplying `астанасы` as the source.
+- Possession on consonant-final singular stems is deferred: forms such as `кітап → кітабым` need stem-alternation rules. Plural possession, such as `кітап → кітаптарым`, is supported.
+- Harmony detection is conservative. Spellings containing `и`, `у`, `ё`, `э`, `ю`, `я`, `ь`, `ъ`, `в`, `ф`, `ц`, `ч` or `щ`, and a final harmony-bearing noninitial `ә`, need additional handling. Harmony-independent instrumental marking may still be possible when the final sound is known.
+- Latin spelling, mixed scripts, phrases, punctuation and internal/all-capital spellings are not supported. The last group may represent abbreviations whose pronunciation cannot be inferred safely.
+- There is no dictionary, part-of-speech detection or general validation of lexical exceptions. Callers must supply regular nouns and accurate source declarations. Pronouns are outside the supported scope.
+- An empty target set requests no change. The processor still validates supported input and supplied features, but does not require missing source categories merely to return the original word.
+- The processor generates forms; it does not decide whether a word can meaningfully be pluralized in a particular context.
+
+## Build target
+
+Uses Maven and targets Java 8. When compiling with a newer JDK, `release=8` preserves Java 8 API and bytecode compatibility.
+
+## Grammar references
+
+The regular suffix rules and the conservative spelling analyzer are based on these references; the implementation intentionally supports only the scope documented above:
+
+- [Kazakh case suffix table — East Kazakhstan Technical University](https://ektu.kz/files/feim/KRYD/textbook/Грамматика/Грамматика%206.htm)
+- [Word formation and grammatical suffixes — iTest](https://itest.kz/kz/ent/qazaq-tili/sozzhasam/lecture/soz-tulhasy-tuyndy-soz-zhasaluy-tubir-men-qosymsha-qosymshanyng-turleri)
+- [A Grammar of Kazakh — Zura Dotton and John Doyle Wagner](https://slaviccenters.duke.edu/sites/slaviccenters.duke.edu/files/file-attachments/kazakh-grammar.pdf)
