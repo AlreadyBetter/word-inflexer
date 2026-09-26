@@ -13,6 +13,10 @@
 
     <artifactId>word-inflexer-kazakh</artifactId>
 
+    <name>Word Inflexer Kazakh</name>
+    <description>Kazakh Cyrillic noun analysis and rule-based inflection.</description>
+    <url>https://github.com/AlreadyBetter/word-inflexer</url>
+
     <dependencies>
         <dependency>
             <groupId>io.github.alreadybetter.wordinflexer</groupId>
@@ -28,6 +32,17 @@
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            <resource>
+                <directory>${project.basedir}/..</directory>
+                <targetPath>META-INF</targetPath>
+                <filtering>false</filtering>
+                <includes><include>LICENSE</include></includes>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

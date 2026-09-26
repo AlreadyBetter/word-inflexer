@@ -12,4 +12,21 @@
     </parent>
 
     <artifactId>word-inflexer-core</artifactId>
+
+    <name>Word Inflexer Core</name>
+    <description>Language-independent grammatical features and word inflection contracts.</description>
+    <url>https://github.com/AlreadyBetter/word-inflexer</url>
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            <resource>
+                <directory>${project.basedir}/..</directory>
+                <targetPath>META-INF</targetPath>
+                <filtering>false</filtering>
+                <includes><include>LICENSE</include></includes>
+            </resource>
+        </resources>
+    </build>
 </project>

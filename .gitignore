@@ -38,3 +38,10 @@ build/
 ### Mac OS ###
 .DS_Store
 /.idea/
+
+### Local publishing credentials ###
+/publishing/settings.local.xml
+/publishing/*.asc
+/publishing/*.key
+/.env
+/.env.*

@@ -114,3 +114,11 @@ The regular suffix rules and the conservative spelling analyzer are based on the
 - [Kazakh case suffix table — East Kazakhstan Technical University](https://ektu.kz/files/feim/KRYD/textbook/Грамматика/Грамматика%206.htm)
 - [Word formation and grammatical suffixes — iTest](https://itest.kz/kz/ent/qazaq-tili/sozzhasam/lecture/soz-tulhasy-tuyndy-soz-zhasaluy-tubir-men-qosymsha-qosymshanyng-turleri)
 - [A Grammar of Kazakh — Zura Dotton and John Doyle Wagner](https://slaviccenters.duke.edu/sites/slaviccenters.duke.edu/files/file-attachments/kazakh-grammar.pdf)
+
+## Publication
+
+Maven Central publication is configured through the optional central-release profile. No release has been published by this setup. See [the publishing guide](publishing/README.md) for credentials, signing and manual release steps.
+
+## License
+
+MIT License. Copyright (c) 2026 Timur Kokishev (AlreadyBetter).
